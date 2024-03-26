@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
+      crossorigin="anonymous"
+    />
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  </head>
+  <body>
+    Hello World!
+    <!-- <button type="button" onclick="ambildata()">Ambil data</button>
+    <button type="button" onclick="bacafile()">Baca file</button>
+    <br />
+    <select name="kota" id="kota">
+      <option value="">Loading ...</option>
+    </select> -->
+    <hr />
+    <button type="button" onclick="showcoord()">Deteksi Koordinat</button>
+    <p id="coord"></p>
+    <p id="locresult"></p>
+    <hr />
+    <h4>Hasil Prediksi Hari Ini Berdasarkan Lokasi</h4>
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th>Waktu</th>
+          <th>Temperatur</th>
+          <th>Kelembaban</th>
+          <th>Kecepatan</th>
+          <th>Tekanan</th>
+        </tr>
+      </thead>
+      <tbody id="resdata">
+        <tr>
+          <td colspan="6">Menunggu Data ...</td>
+        </tr>
+      </tbody>
+    </table>
+    <script>
+      showcoord = () => {
+        if (navigator.geolocation) {
+          //jika navigator tersedia
+          navigator.geolocation.getCurrentPosition(showPosition, showError);
+        } else {
+          //jika navigator tidak tersedia
+          $("#coord").text("Geolocation is not supported by this device");
+        }
+
+        //jika location allowed
+        function showPosition(position) {
+          var latlong =
+            position.coords.latitude + "," + position.coords.longitude;
+          let lat = position.coords.latitude;
+          let long = position.coords.longitude;
+          fetch(
+            `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${long}&appid=5ab05ef1ef4bea450ad3dcce88bb8c53`
+          )
+            .then((response) => response.json())
+            .then((data) => {
+              const today = new Date();
+              const todayStr =
+                today.getFullYear() +
+                "-" +
+                (today.getMonth() + 1).toString().padStart(2, "0") +
+                "-" +
+                today.getDate().toString().padStart(2, "0");
+              console.log(todayStr);
+
+              const listResult = data.list;
+              $("#resdata").empty();
+              for (let i = 0; i < listResult.length; i++) {
+                if (listResult[i].dt_txt.split(" ")[0] === todayStr) {
+                  console.log(listResult[i]);
+                  const time = new Date(listResult[i].dt_txt);
+                  const jam = time.getHours();
+                  const menit = time.getMinutes();
+                  const waktu = jam + ":" + menit.toString().padStart(2, "0");
+
+                  let temp = `
+                  <tr>
+                    <td>${waktu}</td>
+                    <td>${listResult[i].main.temp}</td>
+                    <td>${listResult[i].main.humidity}</td>
+                    <td>${listResult[i].wind.speed}</td>
+                    <td>${listResult[i].main.pressure}</td>
+                  </tr>
+                  `;
+                  $("#resdata").append(temp);
+                }
+              }
+              // Simpan data ke file JSON
+              const dataCity = data.city.name;
+              const dataCountry = data.city.country;
+
+              let locResult = `Lokasi = ${dataCity}, ${dataCountry}`;
+              $("#coord").text("Koordinat = " + latlong);
+              $("#locresult").text(locResult);
+            })
+            .catch((error) => console.error("Error:", error));
+        }
+
+        //jika location disabled atau not allowed
+        function showError(error) {
+          switch (error.code) {
+            case error.PERMISSION_DENIED:
+              $("#coord").text("User denied the request for Geolocation.");
+              break;
+            case error.POSITION_UNAVAILABLE:
+              $("#coord").text("Location information is unavailable.");
+              break;
+            case error.TIMEOUT:
+              $("#coord").text("The request to get user location timed out.");
+              break;
+            case error.UNKNOWN_ERROR:
+              $("#coord").text("An unknown error occurred.");
+              break;
+          }
+        }
+      };
+
+      $(document).ready(function () {
+        // $("#kota").select2();
+      });
+      // const selectKota = document.querySelector("#kota");
+      // selectKota.innerHTML = '<option value="">Pilih Kota</option>';
+      // fetch("ID-city.json")
+      //   .then((response) => response.json())
+      //   .then((dataKota) => {
+      //     for (let i = 0; i < dataKota.length; i++) {
+      //       const namaKota = dataKota[i].name;
+      //       const option = document.createElement("option");
+      //       option.text = namaKota;
+      //       option.value = namaKota;
+      //       selectKota.appendChild(option);
+      //     }
+      //   })
+      //   .catch((error) => console.error("Error:", error));
+
+      // bacafile = () => {
+      //   fetch("ID-city.json")
+      //     .then((response) => response.json())
+      //     .then((dataKota) => {
+      //       for (let i = 0; i < dataKota.length; i++) {
+      //         console.log(dataKota[i]);
+      //       }
+      //     })
+      //     .catch((error) => console.error("Error:", error));
+      // };
+
+      // ambildata = () => {
+      //   fetch("https://cuaca-gempa-rest-api.vercel.app/weather/jawa-tengah")
+      //     .then((response) => response.json())
+      //     .then((data) => {
+      //       // Simpan data ke file JSON
+      //       const dataAreas = data.data.areas;
+      //       let listData = [];
+      //       for (let i = 0; i < dataAreas.length; i++) {
+      //         console.log(dataAreas[i]);
+      //         let datas = {
+      //           nama: dataAreas[i].description,
+      //           lat: dataAreas[i].latitude,
+      //           long: dataAreas[i].longitude,
+      //           coord: dataAreas[i].coordinate,
+      //           domain: dataAreas[i].domain,
+      //         };
+      //         listData.push(datas);
+      //       }
+      //       console.log(listData);
+      //       const jsonData = JSON.stringify(dataAreas);
+      //     })
+      //     .catch((error) => console.error("Error:", error));
+      // };
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+      crossorigin="anonymous"
+    ></script>
+  </body>
+</html>
