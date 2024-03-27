@@ -48,6 +48,9 @@
         </tr>
       </tbody>
     </table>
+    <hr />
+    <h4>Prediksi Cuaca Beberapa Hari Ke Depan</h4>
+    <div id="openweathermap-widget-11"></div>
     <script>
       showcoord = () => {
         if (navigator.geolocation) {
@@ -91,10 +94,10 @@
                   let temp = `
                   <tr>
                     <td>${waktu}</td>
-                    <td>${listResult[i].main.temp}</td>
-                    <td>${listResult[i].main.humidity}</td>
-                    <td>${listResult[i].wind.speed}</td>
-                    <td>${listResult[i].main.pressure}</td>
+                    <td>${(listResult[i].main.temp / 10).toFixed(2)} °C</td>
+                    <td>${listResult[i].main.humidity} %</td>
+                    <td>${listResult[i].wind.speed} m/s</td>
+                    <td>${listResult[i].main.pressure} hPa</td>
                   </tr>
                   `;
                   $("#resdata").append(temp);
@@ -107,6 +110,26 @@
               let locResult = `Lokasi = ${dataCity}, ${dataCountry}`;
               $("#coord").text("Koordinat = " + latlong);
               $("#locresult").text(locResult);
+
+              window.myWidgetParam
+                ? window.myWidgetParam
+                : (window.myWidgetParam = []);
+              window.myWidgetParam.push({
+                id: 11,
+                cityid: data.city.id,
+                appid: "5ab05ef1ef4bea450ad3dcce88bb8c53",
+                units: "metric",
+                containerid: "openweathermap-widget-11",
+              });
+              (function () {
+                var script = document.createElement("script");
+                script.async = true;
+                script.charset = "utf-8";
+                script.src =
+                  "//openweathermap.org/themes/openweathermap/assets/vendor/owm/js/weather-widget-generator.js";
+                var s = document.getElementsByTagName("script")[0];
+                s.parentNode.insertBefore(script, s);
+              })();
             })
             .catch((error) => console.error("Error:", error));
         }
@@ -189,5 +212,6 @@
       integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
       crossorigin="anonymous"
     ></script>
+    <script src="//openweathermap.org/themes/openweathermap/assets/vendor/owm/js/d3.min.js"></script>
   </body>
 </html>
